@@ -1,24 +1,34 @@
-import { readJSON, writeJSON } from "@/lib/db";
+import supabase from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const orders = readJSON("orders.json", []);
-  return NextResponse.json(orders);
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .order("createdAt", { ascending: false });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data);
 }
 
 export async function POST(req) {
   const order = await req.json();
-  const all = readJSON("orders.json", []);
-  all.unshift(order);
-  writeJSON("orders.json", all);
 
-  // Update stock
-  const products = readJSON("products.json", []);
+  const { error: orderError } = await supabase.from("orders").insert(order);
+  if (orderError) return NextResponse.json({ error: orderError.message }, { status: 500 });
+
+  // Descontar stock de cada producto
   for (const item of order.items) {
-    const p = products.find((pr) => pr.id === item.id);
-    if (p) p.stock = Math.max(0, p.stock - item.qty);
+    const { data: product } = await supabase
+      .from("products")
+      .select("stock")
+      .eq("id", item.id)
+      .single();
+
+    if (product) {
+      const newStock = Math.max(0, product.stock - item.qty);
+      await supabase.from("products").update({ stock: newStock }).eq("id", item.id);
+    }
   }
-  writeJSON("products.json", products);
 
   return NextResponse.json({ ok: true, id: order.id });
 }

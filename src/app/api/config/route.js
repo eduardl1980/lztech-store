@@ -1,13 +1,15 @@
-import { readJSON, writeJSON } from "@/lib/db";
+import supabase from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const config = readJSON("config.json", {});
-  return NextResponse.json(config);
+  const { data, error } = await supabase.from("config").select("*").eq("id", 1).single();
+  if (error) return NextResponse.json({}, { status: 500 });
+  return NextResponse.json(data);
 }
 
 export async function POST(req) {
   const config = await req.json();
-  writeJSON("config.json", config);
+  const { error } = await supabase.from("config").update(config).eq("id", 1);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

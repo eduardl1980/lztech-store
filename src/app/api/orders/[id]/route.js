@@ -1,4 +1,4 @@
-import { readJSON, writeJSON } from "@/lib/db";
+import supabase from "@/lib/db";
 import { NextResponse } from "next/server";
 
 const VALID_STATUSES = ["pending", "paid", "delivered"];
@@ -11,15 +11,14 @@ export async function PATCH(req, { params }) {
     return NextResponse.json({ error: "Estado invalido" }, { status: 400 });
   }
 
-  const orders = readJSON("orders.json", []);
-  const idx = orders.findIndex(o => o.id === id);
-  if (idx === -1) {
-    return NextResponse.json({ error: "Pedido no encontrado" }, { status: 404 });
-  }
+  const { data, error } = await supabase
+    .from("orders")
+    .update({ status, updatedAt: new Date().toISOString() })
+    .eq("id", id)
+    .select()
+    .single();
 
-  orders[idx].status = status;
-  orders[idx].updatedAt = new Date().toISOString();
-  writeJSON("orders.json", orders);
+  if (error) return NextResponse.json({ error: "Pedido no encontrado" }, { status: 404 });
 
-  return NextResponse.json({ ok: true, order: orders[idx] });
+  return NextResponse.json({ ok: true, order: data });
 }

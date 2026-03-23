@@ -1,9 +1,10 @@
-import { readJSON, writeJSON } from "@/lib/db";
+import supabase from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const products = readJSON("products.json", []);
-  return NextResponse.json(products);
+  const { data, error } = await supabase.from("products").select("*");
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data);
 }
 
 export async function POST(req) {
@@ -11,28 +12,25 @@ export async function POST(req) {
   const { action, product, products: bulkProducts } = body;
 
   if (action === "bulk") {
-    writeJSON("products.json", bulkProducts);
+    const { error } = await supabase.from("products").insert(bulkProducts);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true, count: bulkProducts.length });
   }
 
   if (action === "delete") {
-    const all = readJSON("products.json", []);
-    const filtered = all.filter((p) => p.id !== product.id);
-    writeJSON("products.json", filtered);
+    const { error } = await supabase.from("products").delete().eq("id", product.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
 
   if (action === "update") {
-    const all = readJSON("products.json", []);
-    const idx = all.findIndex((p) => p.id === product.id);
-    if (idx >= 0) all[idx] = { ...all[idx], ...product };
-    writeJSON("products.json", all);
+    const { error } = await supabase.from("products").update(product).eq("id", product.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
 
   // Default: create
-  const all = readJSON("products.json", []);
-  all.push(product);
-  writeJSON("products.json", all);
+  const { error } = await supabase.from("products").insert(product);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true, id: product.id });
 }
