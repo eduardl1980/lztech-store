@@ -1,0 +1,220 @@
+[
+  {
+    "id": "mn3aafvnrigwx",
+    "customer": {
+      "name": "Maria Paz",
+      "phone": "121411212",
+      "payment": "Efectivo",
+      "delivery": "Envio a domicilio",
+      "address": "Avellaneda 2110",
+      "notes": "Rejas verdes, puerta negra"
+    },
+    "items": [
+      {
+        "id": "p2",
+        "name": "Camara Deportiva 4K",
+        "qty": 1,
+        "price": 45900,
+        "subtotal": 45900
+      },
+      {
+        "id": "p4",
+        "name": "Ventilador LED Escritorio",
+        "qty": 1,
+        "price": 8900,
+        "subtotal": 8900
+      },
+      {
+        "id": "p8",
+        "name": "Cargador Solar Plegable",
+        "qty": 1,
+        "price": 35000,
+        "subtotal": 35000
+      },
+      {
+        "id": "p14",
+        "name": "Hub USB-C 7 en 1",
+        "qty": 1,
+        "price": 24500,
+        "subtotal": 24500
+      },
+      {
+        "id": "p20",
+        "name": "Purificador Aire USB",
+        "qty": 1,
+        "price": 21000,
+        "subtotal": 21000
+      }
+    ],
+    "total": 135300,
+    "status": "delivered",
+    "createdAt": "2026-03-23T14:31:25.667Z",
+    "updatedAt": "2026-03-23T14:33:29.319Z"
+  },
+  {
+    "id": "mn39vxemi3men",
+    "customer": {
+      "name": "Lucia",
+      "phone": "120012112",
+      "payment": "Efectivo",
+      "delivery": "Retiro en el comercio",
+      "address": "",
+      "notes": "voy a retirrlo yo!"
+    },
+    "items": [
+      {
+        "id": "p6",
+        "name": "Parlante Bluetooth",
+        "qty": 1,
+        "price": 19500,
+        "subtotal": 19500
+      },
+      {
+        "id": "p4",
+        "name": "Ventilador LED Escritorio",
+        "qty": 1,
+        "price": 8900,
+        "subtotal": 8900
+      },
+      {
+        "id": "p8",
+        "name": "Cargador Solar Plegable",
+        "qty": 1,
+        "price": 35000,
+        "subtotal": 35000
+      }
+    ],
+    "total": 63400,
+    "status": "paid",
+    "createdAt": "2026-03-23T14:20:08.542Z",
+    "updatedAt": "2026-03-23T14:22:04.227Z"
+  },
+  {
+    "id": "mn3964r544j9x",
+    "customer": {
+      "name": "JOse Lopez",
+      "phone": "1212121212121",
+      "payment": "Efectivo",
+      "delivery": "Retiro en el comercio",
+      "address": "",
+      "notes": "Lo paso a buscar a uktima hora "
+    },
+    "items": [
+      {
+        "id": "p14",
+        "name": "Hub USB-C 7 en 1",
+        "qty": 1,
+        "price": 24500,
+        "subtotal": 24500
+      },
+      {
+        "id": "p19",
+        "name": "Kit Cable Management",
+        "qty": 1,
+        "price": 6500,
+        "subtotal": 6500
+      },
+      {
+        "id": "p12",
+        "name": "Teclado Mecanico 60%",
+        "qty": 2,
+        "price": 32000,
+        "subtotal": 64000
+      }
+    ],
+    "total": 95000,
+    "status": "delivered",
+    "createdAt": "2026-03-23T14:00:05.009Z",
+    "updatedAt": "2026-03-23T14:22:13.499Z"
+  },
+  {
+    "id": "mn35x10is9jie",
+    "customer": {
+      "name": "Jose ",
+      "phone": "12345678",
+      "payment": "Efectivo",
+      "delivery": "Retiro en el comercio",
+      "address": "",
+      "notes": "Voy a las 20hs directo al local"
+    },
+    "items": [
+      {
+        "id": "p3",
+        "name": "Botella Termica 750ml",
+        "qty": 2,
+        "price": 12500,
+        "subtotal": 25000
+      },
+      {
+        "id": "p6",
+        "name": "Parlante Bluetooth",
+        "qty": 1,
+        "price": 19500,
+        "subtotal": 19500
+      },
+      {
+        "id": "p8",
+        "name": "Cargador Solar Plegable",
+        "qty": 1,
+        "price": 35000,
+        "subtotal": 35000
+      }
+    ],
+    "total": 79500,
+    "status": "pending",
+    "createdAt": "2026-03-23T12:29:01.411Z"
+  },
+  {
+    "id": "mn2byqhivcv9j",
+    "customer": {
+      "name": "bgg",
+      "phone": "112211221",
+      "payment": "Efectivo",
+      "delivery": "Retiro en el comercio",
+      "address": "",
+      "notes": "ggg"
+    },
+    "items": [
+      {
+        "id": "p12",
+        "name": "Teclado Mecanico 60%",
+        "qty": 3,
+        "price": 32000,
+        "subtotal": 96000
+      },
+      {
+        "id": "p16",
+        "name": "Mini Drone con Camara",
+        "qty": 2,
+        "price": 42000,
+        "subtotal": 84000
+      }
+    ],
+    "total": 180000,
+    "status": "pending",
+    "createdAt": "2026-03-22T22:30:32.598Z"
+  },
+  {
+    "id": "mn2bv03zh0rr8",
+    "customer": {
+      "name": "jose",
+      "phone": "11111",
+      "payment": "Efectivo",
+      "delivery": "Retiro en el comercio",
+      "address": "",
+      "notes": "afasf"
+    },
+    "items": [
+      {
+        "id": "p5",
+        "name": "Auriculares Bluetooth TWS",
+        "qty": 1,
+        "price": 15900,
+        "subtotal": 15900
+      }
+    ],
+    "total": 15900,
+    "status": "pending",
+    "createdAt": "2026-03-22T22:27:38.447Z"
+  }
+]

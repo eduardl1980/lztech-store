@@ -1,0 +1,369 @@
+[
+  {
+    "id": "p1",
+    "name": "Camara IP WiFi 360",
+    "description": "Seguridad inalambrica, vision nocturna, 1080p Full HD.",
+    "price": 28900,
+    "stock": 18,
+    "category": "Seguridad",
+    "images": [
+      "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p2",
+    "name": "Camara Deportiva 4K",
+    "description": "Resistente al agua 30m. Carcasa y soportes incluidos.",
+    "price": 45900,
+    "stock": 11,
+    "category": "Camaras",
+    "images": [
+      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p3",
+    "name": "Botella Termica 750ml",
+    "description": "Acero inoxidable doble pared. Frio 24hs, caliente 12hs.",
+    "price": 12500,
+    "stock": 38,
+    "category": "Hogar",
+    "images": [
+      "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p4",
+    "name": "Ventilador LED Escritorio",
+    "description": "USB con luces RGB. 3 velocidades, silencioso.",
+    "price": 8900,
+    "stock": 33,
+    "category": "Hogar",
+    "images": [
+      "https://images.unsplash.com/photo-1586953208270-767889fa9b0f?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p5",
+    "name": "Auriculares Bluetooth TWS",
+    "description": "True Wireless, cancelacion de ruido, 6hs autonomia.",
+    "price": 15900,
+    "stock": 27,
+    "category": "Audio",
+    "images": [
+      "https://images.unsplash.com/photo-1590658268037-6bf12f032f55?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p6",
+    "name": "Parlante Bluetooth",
+    "description": "10W, IPX7, bateria 12hs.",
+    "price": 19500,
+    "stock": 20,
+    "category": "Audio",
+    "images": [
+      "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p7",
+    "name": "Powerbank 20000mAh",
+    "description": "Carga rapida USB-C PD 22.5W. Display LED.",
+    "price": 22000,
+    "stock": 30,
+    "category": "Energia",
+    "images": [
+      "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p8",
+    "name": "Cargador Solar Plegable",
+    "description": "21W, 2 puertos USB. Ideal camping.",
+    "price": 35000,
+    "stock": 7,
+    "category": "Energia",
+    "images": [
+      "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p9",
+    "name": "Ring Light 10 Pulgadas",
+    "description": "Tripode, soporte celular. 3 tonos, 10 niveles.",
+    "price": 16500,
+    "stock": 20,
+    "category": "Iluminacion",
+    "images": [
+      "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p10",
+    "name": "Tira LED RGB 5m",
+    "description": "Control remoto y WiFi. 16M colores, sync musica.",
+    "price": 11900,
+    "stock": 45,
+    "category": "Iluminacion",
+    "images": [
+      "https://images.unsplash.com/photo-1550535424-b498819c7572?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p11",
+    "name": "Mouse Gamer 12000 DPI",
+    "description": "7 botones, peso ajustable, cable mallado.",
+    "price": 13500,
+    "stock": 25,
+    "category": "Perifericos",
+    "images": [
+      "https://images.unsplash.com/photo-1527814050087-3793815479db?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p12",
+    "name": "Teclado Mecanico 60%",
+    "description": "Switches Blue, RGB, keycaps PBT, USB-C.",
+    "price": 32000,
+    "stock": 10,
+    "category": "Perifericos",
+    "images": [
+      "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p13",
+    "name": "Soporte Notebook Aluminio",
+    "description": "Ergonomico, ventilado, plegable, 260g.",
+    "price": 18900,
+    "stock": 20,
+    "category": "Accesorios",
+    "images": [
+      "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p14",
+    "name": "Hub USB-C 7 en 1",
+    "description": "HDMI 4K, USB 3.0, SD, PD 100W, Ethernet.",
+    "price": 24500,
+    "stock": 16,
+    "category": "Accesorios",
+    "images": [
+      "https://images.unsplash.com/photo-1625842268584-8f3296236761?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p15",
+    "name": "Smartwatch Deportivo",
+    "description": "AMOLED, GPS, SpO2, 100+ deportes, 14 dias.",
+    "price": 38900,
+    "stock": 14,
+    "category": "Wearables",
+    "images": [
+      "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p16",
+    "name": "Mini Drone con Camara",
+    "description": "Plegable, 720p, giroscopio, 15 min vuelo.",
+    "price": 42000,
+    "stock": 6,
+    "category": "Drones",
+    "images": [
+      "https://images.unsplash.com/photo-1507582020474-9a35b7d455d9?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p17",
+    "name": "Webcam Full HD 1080p",
+    "description": "Gran angular, autofoco, mic estereo, USB.",
+    "price": 14900,
+    "stock": 22,
+    "category": "Camaras",
+    "images": [
+      "https://images.unsplash.com/photo-1587826080692-f439cd0b70da?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p18",
+    "name": "Lampara Escritorio LED",
+    "description": "Articulada, 5 temps, 5 brillos, USB.",
+    "price": 16000,
+    "stock": 16,
+    "category": "Iluminacion",
+    "images": [
+      "https://images.unsplash.com/photo-1507473885765-e6ed057ab6fe?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p19",
+    "name": "Kit Cable Management",
+    "description": "120 piezas: clips, velcro, espiral. 3M.",
+    "price": 6500,
+    "stock": 49,
+    "category": "Accesorios",
+    "images": [
+      "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "p20",
+    "name": "Purificador Aire USB",
+    "description": "HEPA H13, 99.97%, 25dB, luz nocturna.",
+    "price": 21000,
+    "stock": 11,
+    "category": "Hogar",
+    "images": [
+      "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=400&h=400&fit=crop"
+    ]
+  },
+  {
+    "id": "mn36s6tzjx9j6",
+    "name": "Smartwatch Mujer Rosa",
+    "description": "Reloj inteligente con monitoreo de salud, frecuencia cardiaca, ciclo menstrual y notificaciones. Resistente al agua IP67. Bateria 7 dias.",
+    "category": "Smartwatches",
+    "price": 45000,
+    "stock": 20,
+    "images": [
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600",
+      "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=600",
+      "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=600"
+    ]
+  },
+  {
+    "id": "mn36s6tz0oefr",
+    "name": "Auriculares Bluetooth Rosa",
+    "description": "Auriculares inalambricos con cancelacion de ruido activa, 30hs de bateria y estuche de carga compacto. Sonido premium.",
+    "category": "Audio",
+    "price": 32000,
+    "stock": 15,
+    "images": [
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600",
+      "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=600",
+      "https://images.unsplash.com/photo-1491927570842-0261e477d937?w=600"
+    ]
+  },
+  {
+    "id": "mn36s6tzqm0oe",
+    "name": "Secador de Pelo Ionico Pro",
+    "description": "Secador profesional 2200W, tecnologia ionica anti-frizz, 3 temperaturas, difusor y concentrador incluidos.",
+    "category": "Belleza Tech",
+    "price": 28000,
+    "stock": 12,
+    "images": [
+      "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=600",
+      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=600",
+      "https://images.unsplash.com/photo-1589710751893-f9a6770ad71b?w=600"
+    ]
+  },
+  {
+    "id": "mn36s6tz6euiz",
+    "name": "Luz LED Selfie Ring",
+    "description": "Aro de luz LED de 26cm con tripode ajustable hasta 1.8m. 3 tonos de luz, 10 niveles de brillo. Ideal para streaming y fotos.",
+    "category": "Fotografia",
+    "price": 18500,
+    "stock": 30,
+    "images": [
+      "https://images.unsplash.com/photo-1615655096345-61a54750068d?w=600",
+      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600",
+      "https://images.unsplash.com/photo-1452802447250-470a88ac82bc?w=600"
+    ]
+  },
+  {
+    "id": "mn36s6tzlscsu",
+    "name": "Parlante Portatil Waterproof",
+    "description": "Parlante bluetooth 20W resistente al agua IPX7. Luces RGB, 24hs de autonomia, microfono integrado para llamadas.",
+    "category": "Audio",
+    "price": 22000,
+    "stock": 25,
+    "images": [
+      "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600",
+      "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=600",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600"
+    ]
+  },
+  {
+    "id": "mn37epzp3rs0l",
+    "name": "Mouse Inalambrico Silencioso",
+    "description": "Mouse ergonomico inalambrico 2.4GHz, 3200 DPI ajustable, click silencioso, bateria recargable USB-C, hasta 60 dias de uso.",
+    "category": "Perifericos",
+    "price": 18900,
+    "stock": 25,
+    "images": [
+      "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600",
+      "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600",
+      "https://images.unsplash.com/photo-1585792180666-f7347c490ee2?w=600"
+    ]
+  },
+  {
+    "id": "mn37epzp5umjm",
+    "name": "Monitor LED 24 Full HD",
+    "description": "Monitor LED 24 pulgadas Full HD 1080p, 75Hz, panel IPS, tiempo de respuesta 5ms, HDMI y VGA incluidos, ajuste de altura.",
+    "category": "Monitores",
+    "price": 89000,
+    "stock": 8,
+    "images": [
+      "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600",
+      "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=600",
+      "https://images.unsplash.com/photo-1547119957-637f8679db1e?w=600"
+    ]
+  },
+  {
+    "id": "mn37ypvhqgm6y",
+    "name": "Cargador Inalambrico 15W",
+    "description": "Cargador inalambrico rapido Qi 15W compatible con iPhone y Android. Base de carga compacta con indicador LED y proteccion de temperatura.",
+    "category": "Accesorios",
+    "price": 8900,
+    "stock": 40,
+    "images": [
+      "https://images.unsplash.com/photo-1591370874773-6702e8f12fd8?w=600",
+      "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=600",
+      "https://images.unsplash.com/photo-1583394293214-0b3b67b7b248?w=600"
+    ],
+    "createdAt": "2026-03-23T13:26:19.517Z"
+  },
+  {
+    "id": "mn37ypvh38jsy",
+    "name": "Powerbank 20000mAh",
+    "description": "Bateria portatil 20000mAh con carga rapida 22.5W, 3 salidas USB + USB-C, pantalla LCD con porcentaje de carga, peso 450g.",
+    "category": "Accesorios",
+    "price": 22500,
+    "stock": 22,
+    "images": [
+      "https://images.unsplash.com/photo-1609592806596-4f4308a7b8ff?w=600",
+      "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=600",
+      "https://images.unsplash.com/photo-1563770660941-20978e870e26?w=600"
+    ],
+    "createdAt": "2026-03-23T13:26:19.517Z"
+  },
+  {
+    "id": "mn37ypvhnpflv",
+    "name": "Camara Web Full HD",
+    "description": "Camara web 1080p 30fps con microfono estereo integrado, autofocus, compatible con Zoom, Teams y Meet. Plug and play USB.",
+    "category": "Camaras",
+    "price": 15900,
+    "stock": 17,
+    "images": [
+      "https://images.unsplash.com/photo-1587826080692-f439cd0b70da?w=600",
+      "https://images.unsplash.com/photo-1610465299993-e6675c9f9efa?w=600",
+      "https://images.unsplash.com/photo-1623949556303-b0d17e99db23?w=600"
+    ],
+    "createdAt": "2026-03-23T13:26:19.517Z"
+  },
+  {
+    "id": "mn37ypvhkitjb",
+    "name": "Soporte Notebook Aluminio",
+    "description": "Soporte ergonomico de aluminio para notebook de 10 a 16 pulgadas. Angulo ajustable, plegable, mejora la postura y ventilacion.",
+    "category": "Accesorios",
+    "price": 12500,
+    "stock": 30,
+    "images": [
+      "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=600",
+      "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=600",
+      "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600"
+    ],
+    "createdAt": "2026-03-23T13:26:19.517Z"
+  }
+]

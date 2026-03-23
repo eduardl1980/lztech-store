@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>LZ Tech Store – Recomendación de Migración a Base de Datos</title>
+  <style>
+    body {
+      font-family: Calibri, Arial, sans-serif;
+      font-size: 11pt;
+      margin: 2.5cm;
+      color: #222;
+      line-height: 1.5;
+    }
+    h1 {
+      font-size: 18pt;
+      color: #1F4E79;
+      border-bottom: 2px solid #1F4E79;
+      padding-bottom: 6px;
+      margin-top: 0;
+    }
+    h2 {
+      font-size: 14pt;
+      color: #2E75B6;
+      margin-top: 24px;
+      margin-bottom: 8px;
+    }
+    h3 {
+      font-size: 12pt;
+      color: #333;
+      margin-top: 16px;
+    }
+    p {
+      margin: 6px 0 10px 0;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 12px 0 18px 0;
+      font-size: 10.5pt;
+    }
+    th {
+      background-color: #2E75B6;
+      color: white;
+      padding: 7px 10px;
+      text-align: left;
+    }
+    td {
+      border: 1px solid #BDD7EE;
+      padding: 6px 10px;
+      vertical-align: top;
+    }
+    tr:nth-child(even) td {
+      background-color: #DEEAF1;
+    }
+    .highlight {
+      background-color: #FFF2CC;
+      border-left: 4px solid #FFD700;
+      padding: 8px 12px;
+      margin: 12px 0;
+    }
+    .answer-box {
+      background-color: #E2EFDA;
+      border-left: 4px solid #70AD47;
+      padding: 10px 14px;
+      margin: 12px 0;
+      font-weight: bold;
+      font-size: 12pt;
+    }
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      background-color: #F2F2F2;
+      padding: 2px 5px;
+      font-size: 10pt;
+      border-radius: 3px;
+    }
+    pre {
+      background-color: #F2F2F2;
+      border: 1px solid #DDD;
+      padding: 12px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 10pt;
+      margin: 10px 0;
+      white-space: pre-wrap;
+    }
+    ol, ul {
+      margin: 8px 0 12px 0;
+      padding-left: 22px;
+    }
+    li {
+      margin-bottom: 5px;
+    }
+    .footer {
+      margin-top: 40px;
+      font-size: 9pt;
+      color: #999;
+      border-top: 1px solid #DDD;
+      padding-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>LZ Tech Store – Recomendación: ¿Conviene migrar a una base de datos?</h1>
+  <p><strong>Fecha:</strong> 23 de marzo de 2026 &nbsp;|&nbsp; <strong>Proyecto:</strong> lztech-store &nbsp;|&nbsp; <strong>Stack:</strong> Next.js 16 + Tailwind CSS</p>
+
+  <div class="answer-box">
+    Respuesta corta: Sí conviene migrar, y no es tan difícil como parece.
+  </div>
+
+  <!-- ======================================================= -->
+  <h2>1. Arquitectura actual</h2>
+
+  <p>El proyecto usa <strong>Next.js App Router</strong> con rutas API integradas y un sistema de persistencia basado en archivos JSON ubicados en <code>/public/data/</code>. No hay base de datos externa.</p>
+
+  <h3>Archivos de datos actuales</h3>
+  <table>
+    <tr>
+      <th>Archivo</th>
+      <th>Contenido</th>
+      <th>Registros</th>
+    </tr>
+    <tr>
+      <td><code>products.json</code></td>
+      <td>Catálogo de productos (nombre, precio, stock, categoría, imágenes)</td>
+      <td>31 productos</td>
+    </tr>
+    <tr>
+      <td><code>orders.json</code></td>
+      <td>Pedidos con cliente, ítems, total y estado</td>
+      <td>4 órdenes</td>
+    </tr>
+    <tr>
+      <td><code>config.json</code></td>
+      <td>Configuración de la tienda (nombre, WhatsApp, password de admin)</td>
+      <td>1 registro</td>
+    </tr>
+  </table>
+
+  <h3>Rutas API actuales</h3>
+  <table>
+    <tr>
+      <th>Ruta</th>
+      <th>Método</th>
+      <th>Operación</th>
+    </tr>
+    <tr>
+      <td><code>/api/config</code></td>
+      <td>GET / POST</td>
+      <td>Leer y actualizar configuración de la tienda</td>
+    </tr>
+    <tr>
+      <td><code>/api/products</code></td>
+      <td>GET / POST</td>
+      <td>Listar productos / Crear, actualizar, eliminar, importar CSV</td>
+    </tr>
+    <tr>
+      <td><code>/api/orders</code></td>
+      <td>GET / POST</td>
+      <td>Listar órdenes / Crear orden y descontar stock</td>
+    </tr>
+    <tr>
+      <td><code>/api/orders/[id]</code></td>
+      <td>PATCH</td>
+      <td>Actualizar estado de orden (pendiente → pagado → entregado)</td>
+    </tr>
+  </table>
+
+  <!-- ======================================================= -->
+  <h2>2. Por qué conviene migrar a una base de datos</h2>
+
+  <table>
+    <tr>
+      <th>Problema actual con JSON</th>
+      <th>Impacto</th>
+    </tr>
+    <tr>
+      <td><code>writeFileSync</code> es bloqueante (sincrónico)</td>
+      <td>2 usuarios haciendo checkout al mismo tiempo pueden corromper el archivo</td>
+    </tr>
+    <tr>
+      <td>Stock se descuenta directamente en el JSON</td>
+      <td>Con concurrencia, dos personas pueden comprar el mismo último ítem (race condition)</td>
+    </tr>
+    <tr>
+      <td>Admin password en texto plano dentro de <code>/public/data/</code></td>
+      <td>Cualquier persona con acceso al servidor puede leer la contraseña</td>
+    </tr>
+    <tr>
+      <td>El sistema de archivos en Vercel es de solo lectura</td>
+      <td>No se puede hacer deploy sin modificar la arquitectura de todos modos</td>
+    </tr>
+  </table>
+
+  <!-- ======================================================= -->
+  <h2>3. Base de datos recomendada: Supabase (gratuita)</h2>
+
+  <ul>
+    <li><strong>PostgreSQL real</strong>, gratuito hasta 500 MB de datos</li>
+    <li>SDK oficial para Next.js</li>
+    <li>Panel visual para ver y editar datos (reemplaza editar los JSON manualmente)</li>
+    <li>Auth incluido (se puede reemplazar la password hardcodeada del admin)</li>
+    <li>Soporta concurrencia real con transacciones atómicas</li>
+  </ul>
+
+  <!-- ======================================================= -->
+  <h2>4. ¿Cuánto trabajo implica la migración?</h2>
+
+  <div class="highlight">
+    Solo hay que modificar <strong>un archivo</strong>: <code>src/lib/db.js</code>. El resto del código (rutas API, admin, componentes) no cambia.
+  </div>
+
+  <p>El archivo <code>db.js</code> actualmente tiene dos funciones: <code>readJSON</code> y <code>writeJSON</code>. Se reemplazan por llamadas al cliente de Supabase:</p>
+
+  <pre>// ANTES (JSON con sistema de archivos)
+readJSON('products')   →  await supabase.from('products').select('*')
+writeJSON('orders', …) →  await supabase.from('orders').insert(data)
+
+// El resto de las rutas API no cambia</pre>
+
+  <!-- ======================================================= -->
+  <h2>5. Plan de migración paso a paso</h2>
+
+  <ol>
+    <li><strong>Crear tablas en Supabase</strong> (<code>products</code>, <code>orders</code>, <code>config</code>) — aproximadamente 20 minutos</li>
+    <li><strong>Reemplazar <code>db.js</code></strong> con el cliente de Supabase — aproximadamente 1 a 2 horas</li>
+    <li><strong>Migrar los 31 productos actuales</strong> del JSON a Supabase — 5 minutos (importar CSV directamente desde el panel)</li>
+    <li><strong>Deploy en Vercel</strong> con las variables de entorno de Supabase (<code>SUPABASE_URL</code> y <code>SUPABASE_ANON_KEY</code>)</li>
+  </ol>
+
+  <!-- ======================================================= -->
+  <h2>6. Comparativa de opciones de deploy</h2>
+
+  <table>
+    <tr>
+      <th>Plataforma</th>
+      <th>Costo</th>
+      <th>Usuarios concurrentes aprox.</th>
+      <th>Notas</th>
+    </tr>
+    <tr>
+      <td>Vercel Hobby (gratis)</td>
+      <td>$0</td>
+      <td>100 – 500</td>
+      <td>Ideal para empezar</td>
+    </tr>
+    <tr>
+      <td>Vercel Pro</td>
+      <td>USD $20/mes</td>
+      <td>1.000 – 10.000</td>
+      <td>Para mayor escala</td>
+    </tr>
+    <tr>
+      <td>Con Supabase + Vercel</td>
+      <td>Gratis hasta cierto límite</td>
+      <td>Escala sin límite práctico</td>
+      <td>Recomendado para producción</td>
+    </tr>
+  </table>
+
+  <!-- ======================================================= -->
+  <h2>7. Resumen ejecutivo</h2>
+
+  <ul>
+    <li>La arquitectura actual funciona bien en desarrollo pero <strong>no es apta para producción</strong> sin cambios.</li>
+    <li>La migración a Supabase es <strong>puntual y de bajo riesgo</strong>: solo toca un archivo.</li>
+    <li>Supabase en plan gratuito es más que suficiente para una tienda pequeña a mediana.</li>
+    <li>El deploy recomendado es <strong>Vercel + Supabase</strong>, ambos gratuitos para empezar.</li>
+  </ul>
+
+  <div class="footer">
+    Documento generado automáticamente por Claude Code &nbsp;|&nbsp; Proyecto: lztech-store &nbsp;|&nbsp; 23/03/2026
+  </div>
+
+</body>
+</html>
