@@ -1,11 +1,12 @@
 @import "tailwindcss";
 
 @theme {
-  --color-accent: #0891b2;
-  --color-accent-light: #ecfeff;
+  --color-accent:       #0891b2;
   --color-accent-hover: #06b6d4;
+  --color-accent-light: #ecfeff;
+  --color-surface-dark: #060d1b;
   --font-display: "Outfit", sans-serif;
-  --font-body: "DM Sans", sans-serif;
+  --font-body:    "DM Sans", sans-serif;
 }
 
 body {
@@ -13,19 +14,41 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.card-hover {
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.card-hover:hover {
+  box-shadow: 0 8px 32px rgba(8,145,178,0.18), 0 2px 8px rgba(0,0,0,0.08);
+  transform: translateY(-3px);
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes slideR {
   from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  to   { transform: translateX(0); }
 }
 @keyframes cartPulse {
-  0%, 100% { box-shadow: 0 4px 16px #0891b244; }
-  50% { box-shadow: 0 4px 28px #0891b266; }
+  0%, 100% { box-shadow: 0 4px 20px rgba(8,145,178,0.4), 0 0 0 0 rgba(8,145,178,0); }
+  50%      { box-shadow: 0 8px 32px rgba(8,145,178,0.6), 0 0 0 5px rgba(8,145,178,0.08); }
+}
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 16px rgba(8,145,178,0.3); }
+  50%      { box-shadow: 0 0 36px rgba(8,145,178,0.65); }
 }
 
-.animate-fade-up { animation: fadeUp 0.3s ease both; }
-.animate-slide-r { animation: slideR 0.25s ease; }
-.animate-cart-pulse { animation: cartPulse 2s ease-in-out infinite; }
+.animate-fade-up    { animation: fadeUp 0.38s cubic-bezier(.16,1,.3,1) both; }
+.animate-slide-r    { animation: slideR 0.3s cubic-bezier(.16,1,.3,1); }
+.animate-cart-pulse { animation: cartPulse 2.5s ease-in-out infinite; }
+.animate-glow-pulse { animation: glowPulse 2s ease-in-out infinite; }
