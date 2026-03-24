@@ -21,6 +21,19 @@ export default function AdminPage() {
 
   const notify = (m, t = "ok") => { setToast({ m, t }); setTimeout(() => setToast(null), 2500); };
 
+  const handleLogin = async () => {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: pw }),
+    });
+    if (res.ok) {
+      setAuth(true);
+    } else {
+      notify("Contraseña incorrecta", "err");
+    }
+  };
+
   const handleCSV = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -64,9 +77,9 @@ export default function AdminPage() {
           <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-600 to-cyan-700 flex items-center justify-center text-white font-bold text-sm">LZ</div>
           <div><h2 className="font-bold text-lg" style={{ fontFamily: "var(--font-display)" }}>Admin</h2><p className="text-slate-400 text-[11px]">Panel de gestion</p></div>
         </div>
-        <input type="password" className="w-full px-3 py-2.5 border border-slate-200 rounded-md text-sm mb-3 outline-none focus:border-cyan-600" placeholder="Contrasena" value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { if (pw === (config.adminPassword || "admin123")) setAuth(true); else notify("Incorrecta", "err"); } }} />
+        <input type="password" className="w-full px-3 py-2.5 border border-slate-200 rounded-md text-sm mb-3 outline-none focus:border-cyan-600" placeholder="Contrasena" value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => { if (e.key === "Enter") handleLogin(); }} />
         <div className="flex gap-2">
-          <button onClick={() => { if (pw === (config.adminPassword || "admin123")) setAuth(true); else notify("Incorrecta", "err"); }} className="flex-1 py-2.5 bg-cyan-600 text-white rounded-md font-bold text-sm">Ingresar</button>
+          <button onClick={handleLogin} className="flex-1 py-2.5 bg-cyan-600 text-white rounded-md font-bold text-sm">Ingresar</button>
           <a href="/" className="px-4 py-2.5 border border-slate-200 rounded-md text-sm text-slate-500 flex items-center">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
           </a>
