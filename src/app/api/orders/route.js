@@ -13,22 +13,22 @@ export async function GET() {
 export async function POST(req) {
   const order = await req.json();
 
-  const { error: orderError } = await supabaseAdmin.from("orders").insert(order);
-  if (orderError) return NextResponse.json({ error: orderError.message }, { status: 500 });
-
-  // Descontar stock de cada producto
+  // Descontar stock atómicamente antes de crear la orden
   for (const item of order.items) {
-    const { data: product } = await supabaseAdmin
-      .from("products")
-      .select("stock")
-      .eq("id", item.id)
-      .single();
-
-    if (product) {
-      const newStock = Math.max(0, product.stock - item.qty);
-      await supabaseAdmin.from("products").update({ stock: newStock }).eq("id", item.id);
+    const { error: stockError } = await supabaseAdmin.rpc("decrement_stock", {
+      product_id: item.id,
+      qty: item.qty,
+    });
+    if (stockError) {
+      return NextResponse.json(
+        { error: `Sin stock suficiente para: ${item.name}` },
+        { status: 409 }
+      );
     }
   }
+
+  const { error: orderError } = await supabaseAdmin.from("orders").insert(order);
+  if (orderError) return NextResponse.json({ error: orderError.message }, { status: 500 });
 
   return NextResponse.json({ ok: true, id: order.id });
 }
