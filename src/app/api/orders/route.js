@@ -1,4 +1,4 @@
-import supabase from "@/lib/db";
+import supabase, { supabaseAdmin } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -13,12 +13,12 @@ export async function GET() {
 export async function POST(req) {
   const order = await req.json();
 
-  const { error: orderError } = await supabase.from("orders").insert(order);
+  const { error: orderError } = await supabaseAdmin.from("orders").insert(order);
   if (orderError) return NextResponse.json({ error: orderError.message }, { status: 500 });
 
   // Descontar stock de cada producto
   for (const item of order.items) {
-    const { data: product } = await supabase
+    const { data: product } = await supabaseAdmin
       .from("products")
       .select("stock")
       .eq("id", item.id)
@@ -26,7 +26,7 @@ export async function POST(req) {
 
     if (product) {
       const newStock = Math.max(0, product.stock - item.qty);
-      await supabase.from("products").update({ stock: newStock }).eq("id", item.id);
+      await supabaseAdmin.from("products").update({ stock: newStock }).eq("id", item.id);
     }
   }
 

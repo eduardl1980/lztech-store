@@ -1,4 +1,4 @@
-import supabase from "@/lib/db";
+import supabase, { supabaseAdmin } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -9,7 +9,7 @@ export async function GET() {
 
 export async function POST(req) {
   const config = await req.json();
-  const { error } = await supabase.from("config").update(config).eq("id", 1);
+  const { error } = await supabaseAdmin.from("config").update(config).eq("id", 1);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

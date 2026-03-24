@@ -1,4 +1,4 @@
-import supabase from "@/lib/db";
+import { supabaseAdmin } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 const VALID_STATUSES = ["pending", "paid", "delivered"];
@@ -11,7 +11,7 @@ export async function PATCH(req, { params }) {
     return NextResponse.json({ error: "Estado invalido" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("orders")
     .update({ status, updatedAt: new Date().toISOString() })
     .eq("id", id)
