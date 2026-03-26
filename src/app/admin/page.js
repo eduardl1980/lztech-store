@@ -12,12 +12,26 @@ export default function AdminPage() {
   const [tab, setTab] = useState("products");
   const [toast, setToast] = useState(null);
   const [csvPreview, setCsvPreview] = useState(null);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingOrders, setLoadingOrders] = useState(false);
 
   useEffect(() => {
-    fetch("/api/config").then(r => r.json()).then(setConfig);
-    fetch("/api/products").then(r => r.json()).then(setProducts);
-    fetch("/api/orders").then(r => r.json()).then(setOrders);
+    setLoadingProducts(true);
+    Promise.all([
+      fetch("/api/config").then(r => r.json()).then(setConfig).catch(() => {}),
+      fetch("/api/products").then(r => r.json()).then(d => setProducts(Array.isArray(d) ? d : [])).catch(() => {}),
+    ]).finally(() => setLoadingProducts(false));
   }, []);
+
+  useEffect(() => {
+    if (!auth) return;
+    setLoadingOrders(true);
+    fetch("/api/orders")
+      .then(r => r.json())
+      .then(d => setOrders(Array.isArray(d) ? d : []))
+      .catch(() => {})
+      .finally(() => setLoadingOrders(false));
+  }, [auth]);
 
   const notify = (m, t = "ok") => { setToast({ m, t }); setTimeout(() => setToast(null), 2500); };
 
@@ -64,10 +78,16 @@ export default function AdminPage() {
     const toImport = csvPreview.filter(p => p.enabled).map(({ _key, enabled, ...p }) => p);
     if (!toImport.length) { notify("No hay filas seleccionadas", "err"); return; }
     const all = [...products, ...toImport];
-    await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "bulk", products: all }) });
-    setProducts(all);
-    notify(`${toImport.length} productos importados`);
-    setCsvPreview(null);
+    try {
+      const res = await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "bulk", products: all }) });
+      const data = await res.json();
+      if (!res.ok) { notify(data.error || "Error al importar", "err"); return; }
+      setProducts(all);
+      notify(`${toImport.length} productos importados`);
+      setCsvPreview(null);
+    } catch {
+      notify("Error de red al importar", "err");
+    }
   };
 
   if (!auth) return (
@@ -127,8 +147,8 @@ export default function AdminPage() {
       </div>
 
       <div className="p-4 max-w-5xl mx-auto">
-        {tab === "products"  && <ProductsPanel products={products} handleCSV={handleCSV} />}
-        {tab === "orders"    && <OrdersPanel orders={orders} setOrders={setOrders} notify={notify} />}
+        {tab === "products"  && <ProductsPanel products={products} handleCSV={handleCSV} loading={loadingProducts} />}
+        {tab === "orders"    && <OrdersPanel orders={orders} setOrders={setOrders} notify={notify} fetching={loadingOrders} />}
         {tab === "analytics" && <AnalyticsPanel orders={orders} products={products} />}
         {tab === "settings"  && <SettingsPanel config={config} setConfig={setConfig} notify={notify} />}
       </div>
@@ -137,7 +157,7 @@ export default function AdminPage() {
 }
 
 /* ─── PRODUCTS PANEL ──────────────────────────────────────────────────────── */
-function ProductsPanel({ products, handleCSV }) {
+function ProductsPanel({ products, handleCSV, loading }) {
   const [search, setSearch]       = useState("");
   const [filterCat, setFilterCat] = useState("Todas");
   const [sortField, setSortField] = useState("createdAt");
@@ -180,6 +200,13 @@ function ProductsPanel({ products, handleCSV }) {
     if (sortField !== field) return <span className="text-slate-300 ml-0.5">↕</span>;
     return <span className="text-cyan-600 ml-0.5">{sortDir === "asc" ? "↑" : "↓"}</span>;
   };
+
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center py-20 gap-3">
+      <div className="w-8 h-8 border-2 border-cyan-600 border-t-transparent rounded-full animate-spin" />
+      <p className="text-sm text-slate-400" style={{ fontFamily: "var(--font-display)" }}>Cargando productos...</p>
+    </div>
+  );
 
   return (
     <div>
@@ -266,7 +293,7 @@ const STATUS_META = {
   delivered: { label: "Retirado",   bg: "bg-emerald-50",text: "text-emerald-600",border: "border-emerald-200" },
 };
 
-function OrdersPanel({ orders, setOrders, notify }) {
+function OrdersPanel({ orders, setOrders, notify, fetching }) {
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(null);
 
@@ -300,6 +327,13 @@ function OrdersPanel({ orders, setOrders, notify }) {
     { id: "paid",      label: "Pagado",    count: orders.filter(o => o.status === "paid").length },
     { id: "delivered", label: "Retirado",  count: orders.filter(o => o.status === "delivered").length },
   ];
+
+  if (fetching) return (
+    <div className="flex flex-col items-center justify-center py-20 gap-3">
+      <div className="w-8 h-8 border-2 border-cyan-600 border-t-transparent rounded-full animate-spin" />
+      <p className="text-sm text-slate-400" style={{ fontFamily: "var(--font-display)" }}>Cargando pedidos...</p>
+    </div>
+  );
 
   return (
     <div>
@@ -678,10 +712,17 @@ function CSVPreviewModal({ rows, onChange, onConfirm, onCancel }) {
 /* ─── SETTINGS PANEL ─────────────────────────────────────────────────────── */
 function SettingsPanel({ config, setConfig, notify }) {
   const [f, setF]       = useState({ ...config });
+  const [newPw, setNewPw] = useState("");
   const [saved, setSaved] = useState(false);
   const save = async () => {
-    await fetch("/api/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(f) });
-    setConfig(f); setSaved(true); notify("Guardado"); setTimeout(() => setSaved(false), 2000);
+    const payload = { ...f };
+    if (newPw.trim()) payload.adminPassword = newPw.trim();
+    else delete payload.adminPassword;
+    try {
+      const res = await fetch("/api/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      if (!res.ok) { notify("Error al guardar", "err"); return; }
+      setConfig(f); setSaved(true); setNewPw(""); notify("Guardado"); setTimeout(() => setSaved(false), 2000);
+    } catch { notify("Error de red", "err"); }
   };
   return (
     <div className="max-w-md">
@@ -692,7 +733,11 @@ function SettingsPanel({ config, setConfig, notify }) {
           <div><label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Tagline</label><input className="w-full px-3 py-2.5 border border-slate-200 rounded-md text-sm outline-none focus:border-cyan-600" value={f.tagline || ""} onChange={e => setF(p => ({ ...p, tagline: e.target.value }))} /></div>
           <div><label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Descripcion</label><textarea className="w-full px-3 py-2.5 border border-slate-200 rounded-md text-sm outline-none focus:border-cyan-600 resize-y min-h-[60px]" value={f.description || ""} onChange={e => setF(p => ({ ...p, description: e.target.value }))} /></div>
           <div><label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1">WhatsApp</label><input className="w-full px-3 py-2.5 border border-slate-200 rounded-md text-sm outline-none focus:border-cyan-600" value={f.whatsapp || ""} onChange={e => setF(p => ({ ...p, whatsapp: e.target.value }))} /></div>
-          <div><label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Contrasena admin</label><input type="password" className="w-full px-3 py-2.5 border border-slate-200 rounded-md text-sm outline-none focus:border-cyan-600" value={f.adminPassword || ""} onChange={e => setF(p => ({ ...p, adminPassword: e.target.value }))} /></div>
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Nueva contrasena admin</label>
+            <input type="password" className="w-full px-3 py-2.5 border border-slate-200 rounded-md text-sm outline-none focus:border-cyan-600" value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="Dejar vacío para no cambiar" />
+            <p className="text-[10px] text-slate-400 mt-1">La contraseña se guarda hasheada (SHA-256). No se muestra por seguridad.</p>
+          </div>
         </div>
         <button onClick={save} className="w-full mt-4 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-md font-bold text-sm transition" style={{ fontFamily: "var(--font-display)" }}>{saved ? "Guardado!" : "Guardar cambios"}</button>
       </div>

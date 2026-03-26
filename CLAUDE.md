@@ -4,10 +4,14 @@ E-commerce store with WhatsApp checkout. Built with Next.js 15, Tailwind CSS 4, 
 
 ## Architecture
 - Frontend: React components in `src/components/`
-- Backend: API Routes in `src/app/api/` (products, orders, config)
-- Data: JSON files in `public/data/` (products.json, orders.json, config.json)
-- Persistence: `src/lib/db.js` reads/writes JSON files server-side
+- Backend: API Routes in `src/app/api/` (products, orders, config, auth/login)
+- Database: Supabase (PostgreSQL). Tables: `products`, `orders`, `config`
+- Persistence: `src/lib/db.js` exports `supabase` (anon key, respects RLS) and `supabaseAdmin` (service role, bypasses RLS)
+  - GET routes that need all data (orders, config admin) use `supabaseAdmin`
+  - GET products uses `supabase` (public catalog, no RLS restriction needed)
+- Auth: JWT via `jose` + `admin_token` httpOnly cookie. Middleware in `src/middleware.js` protects POST /api/products, GET /api/orders, POST /api/config
 - Utils: `src/lib/utils.js` has `fmt()` for currency, `uid()` for IDs, `parseCSV()` for CSV import
+- Legacy: `public/data/` has JSON files (no longer used, kept for reference)
 
 ## Key features
 - Product catalog with categories, search, filtering
@@ -19,9 +23,9 @@ E-commerce store with WhatsApp checkout. Built with Next.js 15, Tailwind CSS 4, 
 
 ## Pending features to implement
 - Stock management tab (adjust stock +1/-1/+10)
-- Data model viewer tab
 - Product create/edit/delete modals in admin
 - Image upload to `/public/uploads/` instead of URLs
+- Migrate admin password to bcrypt (currently SHA-256 via Node crypto)
 
 ## Style guide
 - Font display: Outfit (headings, labels, numbers)

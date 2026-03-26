@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 const PROTECTED_ROUTES = [
-  { path: "/admin", methods: ["GET"] },
   { path: "/api/products", methods: ["POST"] },
   { path: "/api/orders", methods: ["GET"] },
   { path: "/api/config", methods: ["POST"] },
@@ -43,5 +42,5 @@ export async function middleware(req) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/products", "/api/orders", "/api/config"],
+  matcher: ["/api/products", "/api/orders", "/api/config"],
 };

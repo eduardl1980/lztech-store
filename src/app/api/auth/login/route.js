@@ -1,8 +1,10 @@
 import { SignJWT } from "jose";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/db";
+import crypto from "crypto";
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+const sha256 = (s) => crypto.createHash("sha256").update(s).digest("hex");
 
 export async function POST(req) {
   const { password } = await req.json();
@@ -13,7 +15,12 @@ export async function POST(req) {
     .eq("id", 1)
     .single();
 
-  if (!config || password !== config.adminPassword) {
+  const stored = config?.adminPassword ?? "";
+  // Soporte para hash SHA-256 (64 hex chars) y plaintext legacy
+  const isHash = /^[a-f0-9]{64}$/.test(stored);
+  const matches = isHash ? sha256(password) === stored : password === stored;
+
+  if (!config || !matches) {
     return NextResponse.json({ error: "Contraseña incorrecta" }, { status: 401 });
   }
 

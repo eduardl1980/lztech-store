@@ -20,3 +20,4 @@ sesiones/YYYY-MM-DD_HH-MM_[nombre-sesion].md
 |---|---|---|
 | [2026-03-23_00-00_setup-inicial.md](sesiones/2026-03-23_00-00_setup-inicial.md) | 23/03/2026 22:00 | Setup, errores, arquitectura, CSV, admin panel completo (15 prompts) |
 | [2026-03-23_23-15_nueva-sesion.md](sesiones/2026-03-23_23-15_nueva-sesion.md) | 23/03/2026 23:15 | Sesion activa — verificacion logging automatico |
+| [2026-03-25_00-00_mejoras-pre-git.md](sesiones/2026-03-25_00-00_mejoras-pre-git.md) | 25/03/2026 00:00 | Mejoras pre-Git: validación checkout, API, errores, CLAUDE.md, loading, hash password |

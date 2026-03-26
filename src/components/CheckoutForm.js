@@ -7,9 +7,12 @@ export default function CheckoutForm({ total, onConfirm, onClose, onBack }) {
   const [err, setErr] = useState({});
   const go = () => {
     const e = {};
-    if (!f.name.trim()) e.name = true;
-    if (!f.phone.trim()) e.phone = true;
-    if (f.delivery === "Envio a domicilio" && !f.address.trim()) e.address = true;
+    if (!f.name.trim()) e.name = "Campo requerido";
+    else if (f.name.trim().length < 3) e.name = "Mínimo 3 caracteres";
+    const digits = f.phone.replace(/\D/g, "");
+    if (!f.phone.trim()) e.phone = "Campo requerido";
+    else if (digits.length < 8) e.phone = "Mínimo 8 dígitos";
+    if (f.delivery === "Envio a domicilio" && !f.address.trim()) e.address = "Campo requerido";
     if (Object.keys(e).length) { setErr(e); return; }
     onConfirm(f);
   };
@@ -41,13 +44,15 @@ export default function CheckoutForm({ total, onConfirm, onClose, onBack }) {
           {/* Name */}
           <div>
             <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1.5" style={{ fontFamily: "var(--font-display)" }}>Nombre completo *</label>
-            <input className={"w-full px-4 py-3 rounded-xl border text-sm outline-none transition " + (err.name ? "border-red-400 bg-red-50" : "border-slate-200 bg-slate-50 focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/10")} value={f.name} onChange={e => { setF(p => ({ ...p, name: e.target.value })); setErr(p => ({ ...p, name: false })); }} placeholder="Tu nombre" />
+            <input className={"w-full px-4 py-3 rounded-xl border text-sm outline-none transition " + (err.name ? "border-red-400 bg-red-50" : "border-slate-200 bg-slate-50 focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/10")} value={f.name} onChange={e => { setF(p => ({ ...p, name: e.target.value })); setErr(p => ({ ...p, name: null })); }} placeholder="Tu nombre" />
+            {err.name && <p className="text-red-500 text-[11px] mt-1 ml-1">{err.name}</p>}
           </div>
 
           {/* Phone */}
           <div>
             <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1.5" style={{ fontFamily: "var(--font-display)" }}>Teléfono *</label>
-            <input className={"w-full px-4 py-3 rounded-xl border text-sm outline-none transition " + (err.phone ? "border-red-400 bg-red-50" : "border-slate-200 bg-slate-50 focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/10")} value={f.phone} onChange={e => { setF(p => ({ ...p, phone: e.target.value })); setErr(p => ({ ...p, phone: false })); }} placeholder="1122334455" />
+            <input className={"w-full px-4 py-3 rounded-xl border text-sm outline-none transition " + (err.phone ? "border-red-400 bg-red-50" : "border-slate-200 bg-slate-50 focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/10")} value={f.phone} onChange={e => { setF(p => ({ ...p, phone: e.target.value })); setErr(p => ({ ...p, phone: null })); }} placeholder="1122334455" />
+            {err.phone && <p className="text-red-500 text-[11px] mt-1 ml-1">{err.phone}</p>}
           </div>
 
           {/* Payment */}
@@ -82,7 +87,8 @@ export default function CheckoutForm({ total, onConfirm, onClose, onBack }) {
           {f.delivery === "Envio a domicilio" && (
             <div className="animate-fade-up">
               <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1.5" style={{ fontFamily: "var(--font-display)" }}>Dirección *</label>
-              <input className={"w-full px-4 py-3 rounded-xl border text-sm outline-none transition " + (err.address ? "border-red-400 bg-red-50" : "border-slate-200 bg-slate-50 focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/10")} value={f.address} onChange={e => { setF(p => ({ ...p, address: e.target.value })); setErr(p => ({ ...p, address: false })); }} placeholder="Calle, número, localidad" />
+              <input className={"w-full px-4 py-3 rounded-xl border text-sm outline-none transition " + (err.address ? "border-red-400 bg-red-50" : "border-slate-200 bg-slate-50 focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/10")} value={f.address} onChange={e => { setF(p => ({ ...p, address: e.target.value })); setErr(p => ({ ...p, address: null })); }} placeholder="Calle, número, localidad" />
+              {err.address && <p className="text-red-500 text-[11px] mt-1 ml-1">{err.address}</p>}
             </div>
           )}
 

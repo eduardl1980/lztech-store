@@ -2,7 +2,7 @@ import supabase, { supabaseAdmin } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("orders")
     .select("*")
     .order("createdAt", { ascending: false });
@@ -11,7 +11,15 @@ export async function GET() {
 }
 
 export async function POST(req) {
-  const order = await req.json();
+  let order;
+  try { order = await req.json(); } catch { return NextResponse.json({ error: "JSON inválido" }, { status: 400 }); }
+
+  if (!Array.isArray(order.items) || order.items.length === 0)
+    return NextResponse.json({ error: "El pedido no tiene productos" }, { status: 400 });
+  if (!order.customer?.name?.trim() || !order.customer?.phone?.trim())
+    return NextResponse.json({ error: "Nombre y teléfono del cliente son requeridos" }, { status: 400 });
+  if (!order.total || order.total <= 0)
+    return NextResponse.json({ error: "Total inválido" }, { status: 400 });
 
   // Descontar stock atómicamente antes de crear la orden
   for (const item of order.items) {
