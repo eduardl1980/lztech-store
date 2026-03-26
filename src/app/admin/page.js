@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { fmt, uid, parseCSV } from "@/lib/utils";
 import ProductImage from "@/components/ProductImage";
 
@@ -147,7 +147,7 @@ export default function AdminPage() {
       </div>
 
       <div className="p-4 max-w-5xl mx-auto">
-        {tab === "products"  && <ProductsPanel products={products} handleCSV={handleCSV} loading={loadingProducts} />}
+        {tab === "products"  && <ProductsPanel products={products} setProducts={setProducts} handleCSV={handleCSV} loading={loadingProducts} notify={notify} />}
         {tab === "orders"    && <OrdersPanel orders={orders} setOrders={setOrders} notify={notify} fetching={loadingOrders} />}
         {tab === "analytics" && <AnalyticsPanel orders={orders} products={products} />}
         {tab === "settings"  && <SettingsPanel config={config} setConfig={setConfig} notify={notify} />}
@@ -157,11 +157,18 @@ export default function AdminPage() {
 }
 
 /* ─── PRODUCTS PANEL ──────────────────────────────────────────────────────── */
-function ProductsPanel({ products, handleCSV, loading }) {
+function ProductsPanel({ products, setProducts, handleCSV, loading, notify }) {
   const [search, setSearch]       = useState("");
   const [filterCat, setFilterCat] = useState("Todas");
   const [sortField, setSortField] = useState("createdAt");
   const [sortDir, setSortDir]     = useState("desc");
+  const [editingId, setEditingId] = useState(null);
+  const [editData, setEditData]   = useState({});
+  const [savingId, setSavingId]   = useState(null);
+  const [togglingId, setTogglingId]         = useState(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(null);
+  const [urlInput, setUrlInput]             = useState("");
+  const [previewUrl, setPreviewUrl]         = useState(null);
 
   const categories = useMemo(() => {
     const c = [...new Set(products.map(p => p.category).filter(Boolean))].sort();
@@ -201,6 +208,99 @@ function ProductsPanel({ products, handleCSV, loading }) {
     return <span className="text-cyan-600 ml-0.5">{sortDir === "asc" ? "↑" : "↓"}</span>;
   };
 
+  const startEdit = (p) => {
+    const imgs = (p.images || []).filter(Boolean);
+    setEditData({ name: p.name || "", category: p.category || "", price: String(p.price ?? ""), stock: String(p.stock ?? ""), description: p.description || "", images: imgs });
+    setEditingId(p.id);
+    setUrlInput("");
+  };
+
+  const saveEdit = async (p) => {
+    if (!editData.name?.trim()) { notify("El nombre es requerido", "err"); return; }
+    setSavingId(p.id);
+    const now = new Date().toISOString();
+    const updated = {
+      ...p,
+      name: editData.name.trim(),
+      category: editData.category.trim(),
+      description: editData.description.trim(),
+      price: parseFloat(editData.price) || 0,
+      stock: parseInt(editData.stock, 10) >= 0 ? parseInt(editData.stock, 10) : p.stock,
+      images: editData.images.filter(Boolean),
+      updatedAt: now,
+    };
+    try {
+      const res = await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "update", product: updated }) });
+      if (!res.ok) { const d = await res.json(); notify(d.error || "Error al guardar", "err"); return; }
+      setProducts(prev => prev.map(pr => pr.id === p.id ? updated : pr));
+      setEditingId(null);
+      notify("Producto actualizado");
+    } catch { notify("Error de red", "err"); }
+    setSavingId(null);
+  };
+
+  const deleteProduct = async (p) => {
+    if (!window.confirm(`¿Eliminar "${p.name}"? Esta acción no se puede deshacer.`)) return;
+    try {
+      const res = await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "delete", product: { id: p.id } }) });
+      if (!res.ok) { notify("Error al eliminar", "err"); return; }
+      setProducts(prev => prev.filter(pr => pr.id !== p.id));
+      notify("Producto eliminado");
+    } catch { notify("Error de red", "err"); }
+  };
+
+  const toggleVisible = async (p) => {
+    setTogglingId(p.id);
+    const newVisible = p.visible === false; // false→true (mostrar), undefined/true→false (ocultar)
+    const updated = { ...p, visible: newVisible, updatedAt: new Date().toISOString() };
+    try {
+      const res = await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "update", product: updated }) });
+      const data = await res.json();
+      if (!res.ok) { notify(data.error || "Error al actualizar visibilidad", "err"); setTogglingId(null); return; }
+      setProducts(prev => prev.map(pr => pr.id === p.id ? updated : pr));
+      notify(newVisible ? "Producto visible en tienda" : "Producto oculto de tienda");
+    } catch { notify("Error de red", "err"); }
+    setTogglingId(null);
+  };
+
+  const uploadPhoto = async (productId, file) => {
+    setUploadingPhoto(productId);
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("productId", productId);
+    try {
+      const res = await fetch("/api/products/images", { method: "POST", body: fd });
+      const d = await res.json();
+      if (!res.ok) notify(d.error || "Error al subir foto", "err");
+      else { setEditData(prev => ({ ...prev, images: [...prev.images.filter(Boolean), d.url] })); notify("Foto subida"); }
+    } catch { notify("Error de red", "err"); }
+    setUploadingPhoto(null);
+  };
+
+  const deletePhoto = async (url, idx) => {
+    const match = url.match(/\/storage\/v1\/object\/public\/products\/(.+)$/);
+    if (match) {
+      try { await fetch("/api/products/images", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path: match[1] }) }); }
+      catch {}
+    }
+    setEditData(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }));
+  };
+
+  const makeMain = (idx) => {
+    setEditData(prev => {
+      const imgs = [...prev.images.filter(Boolean)];
+      const [main] = imgs.splice(idx, 1);
+      return { ...prev, images: [main, ...imgs] };
+    });
+  };
+
+  const Ed = ({ field, type = "text", placeholder }) => (
+    <input type={type} inputMode={type === "number" ? "decimal" : undefined}
+      className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-sm outline-none focus:border-cyan-500" placeholder={placeholder}
+      value={editData[field] ?? ""}
+      onChange={e => setEditData(d => ({ ...d, [field]: e.target.value }))} />
+  );
+
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-20 gap-3">
       <div className="w-8 h-8 border-2 border-cyan-600 border-t-transparent rounded-full animate-spin" />
@@ -209,12 +309,13 @@ function ProductsPanel({ products, handleCSV, loading }) {
   );
 
   return (
+    <>
     <div>
       {/* Header */}
       <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
         <div>
           <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-display)" }}>Productos</h2>
-          <p className="text-slate-400 text-xs">{sorted.length} de {products.length} en catalogo</p>
+          <p className="text-slate-400 text-xs">{sorted.length} de {products.length} en catalogo · {products.filter(p => p.visible === false).length} ocultos</p>
         </div>
         <label className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer transition bg-cyan-600 hover:bg-cyan-500 text-white" style={{ fontFamily: "var(--font-display)" }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -226,19 +327,11 @@ function ProductsPanel({ products, handleCSV, loading }) {
       {/* Search + Filter */}
       <div className="flex gap-2 mb-3 flex-wrap">
         <div className="relative flex-1 min-w-[180px]">
-          <input
-            className="w-full py-2 pl-8 pr-3 border border-slate-200 rounded-md text-sm outline-none focus:border-cyan-600"
-            placeholder="Buscar por nombre, descripcion o categoria..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+          <input className="w-full py-2 pl-8 pr-3 border border-slate-200 rounded-md text-sm outline-none focus:border-cyan-600"
+            placeholder="Buscar por nombre, descripcion o categoria..." value={search} onChange={e => setSearch(e.target.value)} />
           <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </div>
-        <select
-          className="py-2 px-3 border border-slate-200 rounded-md text-sm outline-none focus:border-cyan-600 bg-white"
-          value={filterCat}
-          onChange={e => setFilterCat(e.target.value)}
-        >
+        <select className="py-2 px-3 border border-slate-200 rounded-md text-sm outline-none focus:border-cyan-600 bg-white" value={filterCat} onChange={e => setFilterCat(e.target.value)}>
           {categories.map(c => <option key={c}>{c}</option>)}
         </select>
       </div>
@@ -251,38 +344,189 @@ function ProductsPanel({ products, handleCSV, loading }) {
               <tr className="border-b-2 border-slate-100">
                 <th className="p-3 w-11"></th>
                 {[
-                  { label: "Producto",   field: "name"      },
-                  { label: "Categoria",  field: "category"  },
-                  { label: "Precio",     field: "price"     },
-                  { label: "Stock",      field: "stock"     },
-                  { label: "Subido",     field: "createdAt" },
+                  { label: "Producto",       field: "name"      },
+                  { label: "Categoria",      field: "category"  },
+                  { label: "Precio",         field: "price"     },
+                  { label: "Stock",          field: "stock"     },
+                  { label: "Subido",         field: "createdAt" },
+                  { label: "Actualización",  field: "updatedAt" },
                 ].map(col => (
                   <th key={col.field} className="text-left text-[10px] uppercase text-slate-400 tracking-wide p-3 cursor-pointer hover:text-cyan-600 select-none whitespace-nowrap" style={{ fontFamily: "var(--font-display)" }} onClick={() => toggleSort(col.field)}>
                     {col.label}<SortIcon field={col.field} />
                   </th>
                 ))}
+                <th className="text-left text-[10px] uppercase text-slate-400 tracking-wide p-3 whitespace-nowrap" style={{ fontFamily: "var(--font-display)" }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {sorted.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-10 text-slate-400 text-sm">Sin resultados</td></tr>
-              ) : sorted.map(p => (
-                <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50">
-                  <td className="p-3"><div className="w-10 h-10 rounded-md overflow-hidden"><ProductImage src={p.images?.[0]} name={p.name} category={p.category} size="sm" /></div></td>
-                  <td className="p-3 text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>{p.name}</td>
-                  <td className="p-3"><span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded-md" style={{ fontFamily: "var(--font-display)" }}>{p.category}</span></td>
-                  <td className="p-3 text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>{fmt(p.price)}</td>
-                  <td className="p-3"><span className={"font-bold text-sm " + (p.stock <= 0 ? "text-red-500" : p.stock <= 5 ? "text-amber-500" : "text-green-600")} style={{ fontFamily: "var(--font-display)" }}>{p.stock}</span></td>
-                  <td className="p-3 text-xs text-slate-400 whitespace-nowrap">
-                    {p.createdAt ? new Date(p.createdAt).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
-                  </td>
-                </tr>
-              ))}
+                <tr><td colSpan={8} className="text-center py-10 text-slate-400 text-sm">Sin resultados</td></tr>
+              ) : sorted.map(p => {
+                const isHidden  = p.visible === false;
+                const isEditing = editingId === p.id;
+                return (
+                  <React.Fragment key={p.id}>
+                    <tr className={"border-b border-slate-100 transition " + (isHidden ? "bg-slate-50 opacity-60" : "hover:bg-slate-50")}>
+                      <td className="p-3">
+                        <div className={"w-10 h-10 rounded-md overflow-hidden relative " + (isHidden ? "grayscale" : "")}>
+                          <ProductImage src={p.images?.[0]} name={p.name} category={p.category} size="sm" />
+                          {p.images?.filter(Boolean).length > 0 && (
+                            <div className="absolute bottom-0 right-0 bg-black/60 text-white text-[8px] font-bold px-1 leading-[14px] rounded-tl">
+                              {p.images.filter(Boolean).length}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>{p.name}</span>
+                          {isHidden && <span className="text-[9px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded font-semibold" style={{ fontFamily: "var(--font-display)" }}>OCULTO</span>}
+                        </div>
+                      </td>
+                      <td className="p-3"><span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded-md" style={{ fontFamily: "var(--font-display)" }}>{p.category}</span></td>
+                      <td className="p-3 text-sm font-semibold" style={{ fontFamily: "var(--font-display)" }}>{fmt(p.price)}</td>
+                      <td className="p-3"><span className={"font-bold text-sm " + (p.stock <= 0 ? "text-red-500" : p.stock <= 5 ? "text-amber-500" : "text-green-600")} style={{ fontFamily: "var(--font-display)" }}>{p.stock}</span></td>
+                      <td className="p-3 text-xs text-slate-400 whitespace-nowrap">{p.createdAt ? new Date(p.createdAt).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" }) : "—"}</td>
+                      <td className="p-3 text-xs whitespace-nowrap">
+                        {p.updatedAt
+                          ? <span className="text-cyan-600 font-medium">{new Date(p.updatedAt).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })} <span className="text-slate-400">{new Date(p.updatedAt).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}</span></span>
+                          : <span className="text-slate-300">—</span>}
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1">
+                          {/* Ocultar / Mostrar */}
+                          <button title={isHidden ? "Mostrar en tienda" : "Ocultar de tienda"} disabled={togglingId === p.id}
+                            onClick={() => toggleVisible(p)}
+                            className={"w-7 h-7 rounded-md flex items-center justify-center transition " + (isHidden ? "bg-slate-200 text-slate-500 hover:bg-amber-100 hover:text-amber-600" : "bg-slate-100 text-slate-400 hover:bg-slate-200")}>
+                            {togglingId === p.id
+                              ? <div className="w-3 h-3 border border-slate-400 border-t-transparent rounded-full animate-spin" />
+                              : isHidden
+                                ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>}
+                          </button>
+                          {/* Editar */}
+                          <button title="Editar" onClick={() => isEditing ? setEditingId(null) : startEdit(p)}
+                            className={"w-7 h-7 rounded-md flex items-center justify-center transition " + (isEditing ? "bg-cyan-100 text-cyan-600" : "bg-slate-100 text-slate-400 hover:bg-cyan-50 hover:text-cyan-600")}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          </button>
+                          {/* Borrar */}
+                          <button title="Eliminar" onClick={() => deleteProduct(p)}
+                            className="w-7 h-7 rounded-md bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-500 flex items-center justify-center transition">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+
+                    {/* ── Fila de edición inline ── */}
+                    {isEditing && (
+                      <tr key={p.id + "_edit"} className="border-b border-cyan-100 bg-cyan-50/40">
+                        <td colSpan={8} className="px-4 py-4">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Nombre *</label>
+                              <Ed field="name" placeholder="Nombre del producto" />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Categoría</label>
+                              <Ed field="category" placeholder="Categoría" />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Precio</label>
+                              <Ed field="price" type="number" placeholder="0" />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Stock</label>
+                              <Ed field="stock" type="number" placeholder="0" />
+                            </div>
+                            <div className="col-span-2">
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Descripción</label>
+                              <Ed field="description" placeholder="Descripción del producto" />
+                            </div>
+                          </div>
+                          <div className="mb-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                                Fotos del producto
+                                <span className="ml-2 text-slate-300 font-normal normal-case">({editData.images.filter(Boolean).length} foto{editData.images.filter(Boolean).length !== 1 ? "s" : ""} · JPG, PNG, WebP, GIF)</span>
+                              </label>
+                            </div>
+                            <div className="flex flex-wrap gap-2 items-end">
+                              {editData.images.filter(Boolean).map((url, i) => (
+                                <div key={url + i} className="relative group w-20">
+                                  <div className={"w-20 h-20 rounded-lg overflow-hidden border-2 cursor-pointer " + (i === 0 ? "border-amber-400" : "border-slate-200")}
+                                    onClick={() => setPreviewUrl(url)}>
+                                    <img src={url} alt="" className="w-full h-full object-cover bg-slate-100" onError={e => { e.target.style.opacity = "0.3"; }} />
+                                  </div>
+                                  {i === 0 && <div className="absolute -top-2 left-0 right-0 flex justify-center"><span className="bg-amber-400 text-white text-[8px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">★ PRINCIPAL</span></div>}
+                                  <div className="absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-1.5">
+                                    <button type="button" onClick={() => setPreviewUrl(url)} className="text-[9px] text-white/80 hover:text-white font-bold">👁 Ver</button>
+                                    {i > 0 && <button type="button" onClick={() => makeMain(i)} className="text-[9px] text-amber-300 hover:text-white font-bold">★ Principal</button>}
+                                    <button type="button" onClick={() => deletePhoto(url, i)} className="text-[9px] text-red-300 hover:text-white font-bold">× Eliminar</button>
+                                  </div>
+                                </div>
+                              ))}
+                              {/* Subir desde archivo */}
+                              <label className={"w-20 h-20 rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition " + (uploadingPhoto === p.id ? "border-cyan-400 text-cyan-500" : "border-slate-300 text-slate-400 hover:border-cyan-400 hover:text-cyan-500")}>
+                                {uploadingPhoto === p.id
+                                  ? <div className="w-5 h-5 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+                                  : <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span className="text-[9px] mt-1 leading-tight text-center">Subir<br/>foto</span></>}
+                                <input type="file" accept="image/*" className="hidden" disabled={!!uploadingPhoto}
+                                  onChange={e => e.target.files[0] && uploadPhoto(p.id, e.target.files[0])} />
+                              </label>
+                            </div>
+                            {/* URL externa — estado independiente para evitar stale closure */}
+                            <div className="mt-2 flex gap-2 items-center">
+                              {urlInput && <img src={urlInput} alt="" className="w-8 h-8 rounded object-cover border border-slate-200 bg-slate-50 shrink-0" onError={e => { e.target.style.display = "none"; }} />}
+                              <input
+                                className="flex-1 px-2 py-1.5 border border-slate-200 rounded-md text-xs outline-none focus:border-cyan-500"
+                                placeholder="O pegá una URL de imagen y presioná Enter..."
+                                value={urlInput}
+                                onChange={e => setUrlInput(e.target.value)}
+                                onKeyDown={e => { if (e.key === "Enter" && urlInput.trim()) { setEditData(d => ({ ...d, images: [...d.images.filter(Boolean), urlInput.trim()] })); setUrlInput(""); } }}
+                              />
+                              <button type="button"
+                                onClick={() => { if (urlInput.trim()) { setEditData(d => ({ ...d, images: [...d.images.filter(Boolean), urlInput.trim()] })); setUrlInput(""); } }}
+                                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md text-xs font-medium transition whitespace-nowrap" style={{ fontFamily: "var(--font-display)" }}>
+                                + Agregar
+                              </button>
+                            </div>
+                            <p className="text-[9px] text-slate-400 mt-1.5">Clic en foto para previsualizar · Hover para reordenar o eliminar · La primera es la principal</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => saveEdit(p)} disabled={savingId === p.id}
+                              className="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-sm font-bold transition disabled:opacity-50 flex items-center gap-2" style={{ fontFamily: "var(--font-display)" }}>
+                              {savingId === p.id ? <><div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" /> Guardando...</> : "Aceptar"}
+                            </button>
+                            <button onClick={() => setEditingId(null)} className="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-500 hover:bg-white transition" style={{ fontFamily: "var(--font-display)" }}>
+                              Cancelar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
     </div>
+
+    {previewUrl && (
+      <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setPreviewUrl(null)}>
+        <div className="relative max-w-2xl w-full" onClick={e => e.stopPropagation()}>
+          <img src={previewUrl} alt="Preview" className="w-full max-h-[80vh] rounded-xl object-contain shadow-2xl" />
+          <button onClick={() => setPreviewUrl(null)}
+            className="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center text-slate-600 hover:text-red-500 shadow-lg text-base font-bold transition">
+            ×
+          </button>
+          <p className="text-white/60 text-xs text-center mt-3">Clic fuera para cerrar</p>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 

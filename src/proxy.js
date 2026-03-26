@@ -4,9 +4,10 @@ import { NextResponse } from "next/server";
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 const PROTECTED_ROUTES = [
-  { path: "/api/products", methods: ["POST"] },
-  { path: "/api/orders", methods: ["GET"] },
-  { path: "/api/config", methods: ["POST"] },
+  { path: "/api/products",        methods: ["POST"] },
+  { path: "/api/products/images", methods: ["POST", "DELETE"] },
+  { path: "/api/orders",          methods: ["GET"] },
+  { path: "/api/config",          methods: ["POST"] },
 ];
 
 function isProtected(pathname, method) {
@@ -15,7 +16,7 @@ function isProtected(pathname, method) {
   );
 }
 
-export async function middleware(req) {
+export async function proxy(req) {
   const { pathname } = req.nextUrl;
   const method = req.method;
 
@@ -42,5 +43,5 @@ export async function middleware(req) {
 }
 
 export const config = {
-  matcher: ["/api/products", "/api/orders", "/api/config"],
+  matcher: ["/api/products", "/api/products/images", "/api/orders", "/api/config"],
 };
